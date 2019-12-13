@@ -45,6 +45,8 @@ class EarningsSpider(scrapy.Spider):
     def parse(self, response):
         with open('form.html', 'wb') as file:
             file.write(response.body)
+        # the form has a hidden field with a token, so we're actually submitting the form
+        # (instead of simply using requests and a POST request)
         return scrapy.FormRequest.from_response(response,
                                                 formname='sedlak_calculator',
                                                 formdata=self.post_data,
@@ -55,9 +57,11 @@ class EarningsSpider(scrapy.Spider):
             file.write(response.body)
         salary_div = response.css('div.count-salary')
         spans_in_salary_div = salary_div.css('span::text')
+        # get first span, it contains the text we're interested in
         salary = spans_in_salary_div.get()
         # extract only digits from salary and cut off the cents
         salary_no_cents = ''.join(list(filter(str.isdigit, salary)))[:-2]
+        # send the results through a queue
         self.queue.put([self.earnings, salary_no_cents])
 
 
@@ -69,20 +73,27 @@ class EarningsCalculator:
     def add_earnings(self, earnings):
         self.earnings_list.append(earnings)
 
+    # iterable
+    # results are a list like this:
+    # [[2000, 1500],
+    # [3000, 2500]]
     def get_salary(self):
         earnings_count = len(self.earnings_list)
         assert earnings_count > 0, 'no earnings to convert'
+        # queue for receiving data from spiders
         queue = Queue(maxsize=earnings_count)
         process = CrawlerProcess(settings={
             'FEED_FORMAT': 'json',
             'FEED_URI': 'items.json'
         })
+        # add a spider for each earning to convert
         for earning_to_convert in self.earnings_list:
             process.crawl(EarningsSpider, earnings=earning_to_convert, queue=queue)
         process.start()
 
+        # wait for results from spiders
         waiting_for_results_count = earnings_count
-        while (waiting_for_results_count > 0):
+        while waiting_for_results_count > 0:
             try:
                 result = queue.get(block=True, timeout=10)
             except Empty:
