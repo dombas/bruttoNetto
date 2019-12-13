@@ -60,9 +60,21 @@ class EarningsSpider(scrapy.Spider):
         # get first span, it contains the text we're interested in
         salary = spans_in_salary_div.get()
         # extract only digits from salary and cut off the cents
-        salary_no_cents = ''.join(list(filter(str.isdigit, salary)))[:-2]
+        salary = clean_money_string(salary)
         # send the results through a queue
-        self.queue.put([self.earnings, salary_no_cents])
+        self.queue.put([self.earnings, salary])
+
+
+def clean_money_string(earnings):
+    # if there's a comma, change it to a dot
+    earnings = earnings.replace(',', '.')
+    # remove all characters except numbers and dots
+    earnings = ''.join(list(filter(lambda x: str.isdigit(x) or '.' == x, earnings)))
+    # if there are cents, remove them
+    dot_index = earnings.find('.')
+    if dot_index != -1:
+        earnings = earnings[:dot_index]
+    return earnings
 
 
 class EarningsCalculator:
@@ -71,6 +83,7 @@ class EarningsCalculator:
         self.earnings_list = list()
 
     def add_earnings(self, earnings):
+        earnings = clean_money_string(earnings)
         self.earnings_list.append(earnings)
 
     # iterable
