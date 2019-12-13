@@ -1,6 +1,8 @@
 import scrapy, sys
+import matplotlib.pyplot as plt
+import numpy as np
 from scrapy.crawler import CrawlerProcess
-from queue import Queue
+from queue import Queue, Empty
 
 
 class EarningsSpider(scrapy.Spider):
@@ -60,7 +62,10 @@ class EarningsCalculator:
 
         waiting_for_results_count = earnings_count
         while (waiting_for_results_count > 0):
-            result = queue.get(block=True, timeout=10)
+            try:
+                result = queue.get(block=True, timeout=10)
+            except Empty:
+                result = 'timeout'
             waiting_for_results_count -= 1
             yield result
 
@@ -69,5 +74,29 @@ earnings_calculator = EarningsCalculator()
 arguments_count = len(sys.argv) - 1
 for argument in sys.argv[1:]:
     earnings_calculator.add_earnings(argument)
+
+# print results
+print('[brutto, netto]')
+results = list()
 for result in earnings_calculator.get_salary():
+    results.append(result)
     print(result)
+
+# display graph
+height = list()
+y_pos = list()
+
+for result in results:
+    # if the result did not timeout (it will be a string otherwise)
+    if isinstance(result, list):
+        brutto = int(result[1])
+        netto = int(result[0])
+        height.append(brutto)
+        y_pos.append(netto)
+# TODO choose width based on smallest difference between
+plt.bar(y_pos, height, width=100)
+plt.title('Zarobki brutto do netto')
+plt.xlabel('Brutto')
+plt.ylabel('Netto')
+
+plt.show()
