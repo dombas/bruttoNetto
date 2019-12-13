@@ -102,6 +102,24 @@ class EarningsCalculator:
             yield result
 
 
+def display_graph(results):
+    height = list()
+    y_pos = list()
+    for result in results:
+        # if the result did not timeout (it will be a string otherwise)
+        if isinstance(result, list):
+            brutto = float(result[1])
+            netto = float(result[0])
+            height.append(brutto)
+            y_pos.append(netto)
+    bar_width = np.min(np.diff(np.sort(y_pos))) * 0.9
+    plt.bar(y_pos, height, width=bar_width)
+    plt.title('Zarobki brutto do netto')
+    plt.xlabel('Brutto')
+    plt.ylabel('Netto')
+    plt.show()
+
+
 earnings_calculator = EarningsCalculator()
 arguments_count = len(sys.argv) - 1
 for argument in sys.argv[1:]:
@@ -109,25 +127,10 @@ for argument in sys.argv[1:]:
 
 # print results
 print('[brutto, netto]')
-results = list()
+results_list = list()
 for result in earnings_calculator.get_salary():
-    results.append(result)
+    results_list.append(result)
     print(result)
 
 # display graph
-height = list()
-y_pos = list()
-for result in results:
-    # if the result did not timeout (it will be a string otherwise)
-    if isinstance(result, list):
-        brutto = float(result[1])
-        netto = float(result[0])
-        height.append(brutto)
-        y_pos.append(netto)
-# TODO choose width based on smallest difference between
-plt.bar(y_pos, height, width=100)
-plt.title('Zarobki brutto do netto')
-plt.xlabel('Brutto')
-plt.ylabel('Netto')
-
-plt.show()
+display_graph(results_list)
