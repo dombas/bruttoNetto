@@ -12,7 +12,28 @@ class EarningsSpider(scrapy.Spider):
         self.queue = queue
         self.earnings = str(earnings)
         self.post_data = {
-            'sedlak_calculator[earnings]': self.earnings
+            'sedlak_calculator[earnings]': self.earnings,
+            'sedlak_calculator[selfEmployer]': '1',
+            'sedlak_calculator[rentAndAnnuityCost]': '1',
+            'sedlak_calculator[sicknesCost]': '1',
+            'sedlak_calculator[healthCost]': '1',
+            'sedlak_calculator[FPCost]': '1',
+            'sedlak_calculator[FGSPCost]': '1',
+            'sedlak_calculator[accidentPercent]': '1.67',
+            'sedlak_calculator[end26Year]': '1',
+            'sedlak_calculator[employeePercent]': '2',
+            'sedlak_calculator[employerPercent]': '1.5',
+            'sedlak_calculator[octoberIncome]': '1',
+            'sedlak_calculator[businessExpenses]': '0',
+            'work_accidentPercent': '1.67',
+            'nonwork_accidentPercent': '1.67',
+            'sedlak_calculator[contractType]': 'work',
+            'sedlak_calculator[calculateWay]': 'gross',
+            'sedlak_calculator[year]': '2019',
+            'sedlak_calculator[mandateModels]': 'otherCompany',
+            'sedlak_calculator[theSameCity]': '1',
+            'sedlak_calculator[freeCost]': '1',
+            'sedlak_calculator[constantEarnings]': '1',
         }
         for month_number in range(12):
             post_data_key = 'sedlak_calculator[monthlyEarnings][{}]'.format(month_number)
@@ -83,20 +104,20 @@ for result in earnings_calculator.get_salary():
     print(result)
 
 # display graph
-height = list()
-y_pos = list()
-
-for result in results:
-    # if the result did not timeout (it will be a string otherwise)
-    if isinstance(result, list):
-        brutto = int(result[1])
-        netto = int(result[0])
-        height.append(brutto)
-        y_pos.append(netto)
-# TODO choose width based on smallest difference between
-plt.bar(y_pos, height, width=100)
-plt.title('Zarobki brutto do netto')
-plt.xlabel('Brutto')
-plt.ylabel('Netto')
-
-plt.show()
+# height = list()
+# y_pos = list()
+#
+# for result in results:
+#     # if the result did not timeout (it will be a string otherwise)
+#     if isinstance(result, list):
+#         brutto = float(result[1])
+#         netto = float(result[0])
+#         height.append(brutto)
+#         y_pos.append(netto)
+# # TODO choose width based on smallest difference between
+# plt.bar(y_pos, height, width=100)
+# plt.title('Zarobki brutto do netto')
+# plt.xlabel('Brutto')
+# plt.ylabel('Netto')
+#
+# plt.show()
