@@ -104,20 +104,19 @@ for result in earnings_calculator.get_salary():
     print(result)
 
 # display graph
-# height = list()
-# y_pos = list()
-#
-# for result in results:
-#     # if the result did not timeout (it will be a string otherwise)
-#     if isinstance(result, list):
-#         brutto = float(result[1])
-#         netto = float(result[0])
-#         height.append(brutto)
-#         y_pos.append(netto)
-# # TODO choose width based on smallest difference between
-# plt.bar(y_pos, height, width=100)
-# plt.title('Zarobki brutto do netto')
-# plt.xlabel('Brutto')
-# plt.ylabel('Netto')
-#
-# plt.show()
+height = list()
+y_pos = list()
+for result in results:
+    # if the result did not timeout (it will be a string otherwise)
+    if isinstance(result, list):
+        brutto = float(result[1])
+        netto = float(result[0])
+        height.append(brutto)
+        y_pos.append(netto)
+# TODO choose width based on smallest difference between
+plt.bar(y_pos, height, width=100)
+plt.title('Zarobki brutto do netto')
+plt.xlabel('Brutto')
+plt.ylabel('Netto')
+
+plt.show()
