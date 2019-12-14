@@ -240,17 +240,18 @@ def display_graph(results):
     plt.show()
 
 
-earnings_calculator = EarningsCalculator()
-arguments_count = len(sys.argv) - 1
-for argument in sys.argv[1:]:
-    earnings_calculator.add_earnings(argument)
+if __name__ == '__main__':
+    earnings_calculator = EarningsCalculator()
+    arguments_count = len(sys.argv) - 1
+    for argument in sys.argv[1:]:
+        earnings_calculator.add_earnings(argument)
 
-# print results
-print('[brutto, netto]')
-results_list = list()
-for result in earnings_calculator.get_salary():
-    results_list.append(result)
-    print(result)
+    # print results
+    print('[brutto, netto]')
+    results_list = list()
+    for result in earnings_calculator.get_salary():
+        results_list.append(result)
+        print(result)
 
-# display graph
-display_graph(results_list)
+    # display graph
+    display_graph(results_list)
