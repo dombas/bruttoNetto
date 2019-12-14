@@ -193,7 +193,8 @@ class EarningsCalculator:
         queue = Queue(maxsize=earnings_count)
         process = CrawlerProcess(settings={
             'FEED_FORMAT': 'json',
-            'FEED_URI': 'items.json'
+            'FEED_URI': 'items.json',
+            'LOG_FILE': 'scrapy.log'
         })
         # add a spider for each earning to convert
         for earning_to_convert in self.earnings_list:
