@@ -229,6 +229,9 @@ def display_graph(results):
             netto = float(result[0])
             height.append(brutto)
             y_pos.append(netto)
+    if len(height) == 0:
+        # probably all crawlers timed out
+        raise ValueError('No data for graph.')
     if len(results) == 1:
         plt.bar(y_pos, height)
     else:
@@ -257,6 +260,9 @@ if __name__ == '__main__':
         print(result)
 
     # display graph
-    display_graph(results_list)
+    try:
+        display_graph(results_list)
+    except ValueError as error:
+        print('Can\'t display graph: '+str(error))
 
 # TODO don't cut off cents on input and output, maybe only for graph
