@@ -246,9 +246,12 @@ def display_graph(results):
     plt.show()
 
 
-if __name__ == '__main__':
+def main():
     earnings_calculator = EarningsCalculator()
     arguments_count = len(sys.argv) - 1
+    if arguments_count == 0:
+        print('Please provide at least one argument')
+        return
     for argument in sys.argv[1:]:
         earnings_calculator.add_earnings(argument)
 
@@ -263,6 +266,10 @@ if __name__ == '__main__':
     try:
         display_graph(results_list)
     except ValueError as error:
-        print('Can\'t display graph: '+str(error))
+        print('Can\'t display graph: ' + str(error))
+
+
+if __name__ == '__main__':
+    main()
 
 # TODO don't cut off cents on input and output, maybe only for graph
