@@ -229,8 +229,11 @@ def display_graph(results):
             netto = float(result[0])
             height.append(brutto)
             y_pos.append(netto)
-    bar_width = np.min(np.diff(np.sort(y_pos))) * 0.9
-    plt.bar(y_pos, height, width=bar_width)
+    if len(results) == 1:
+        plt.bar(y_pos, height)
+    else:
+        bar_width = np.min(np.diff(np.sort(y_pos))) * 0.9
+        plt.bar(y_pos, height, width=bar_width)
     plt.title('Zarobki brutto do netto')
     plt.xlabel('Brutto')
     plt.ylabel('Netto')
@@ -255,3 +258,5 @@ if __name__ == '__main__':
 
     # display graph
     display_graph(results_list)
+
+# TODO don't cut off cents on input and output, maybe only for graph
