@@ -1,16 +1,47 @@
-import scrapy, sys
+from queue import Queue, Empty
+
 import matplotlib.pyplot as plt
 import numpy as np
+import scrapy
+import sys
 from scrapy.crawler import CrawlerProcess
-from queue import Queue, Empty
 
 
 class EarningsSpider(scrapy.Spider):
+    """
+    A class for crawling the salary calculator on wynagrodzenia.pl
+
+    Attributes
+    ----------
+    earnings : str OR int OR float
+        earnings to input into the calculator
+    queue : Queue
+        results will be put into this queue
+
+    Methods
+    -------
+    parse(response)
+        Writes the html response to form.html file, returns a scrapy.FormRequest and sets self.parse_results as callback
+
+    parse_results(response) Writes the html response to result.html file, extracts the calculated salary from html,
+        cleans it and puts a [earnings, salary] into the queue.
+    """
+
+    name = 'wynagrodzenia.pl'
+    start_urls = ['https://wynagrodzenia.pl/kalkulator-wynagrodzen/']
 
     def __init__(self, earnings, queue, name=None, **kwargs):
+        """
+        Parameters
+        ----------
+        earnings : str or int or float
+            earnings to input into the calculator
+        queue : Queue
+            results will be put into this queue
+        """
         super().__init__(name, **kwargs)
-        self.queue = queue
         self.earnings = str(earnings)
+        self.queue = queue
         self.post_data = {
             'sedlak_calculator[earnings]': self.earnings,
             'sedlak_calculator[selfEmployer]': '1',
@@ -39,10 +70,19 @@ class EarningsSpider(scrapy.Spider):
             post_data_key = 'sedlak_calculator[monthlyEarnings][{}]'.format(month_number)
             self.post_data[post_data_key] = self.earnings
 
-    name = 'wynagrodzenia.pl'
-    start_urls = ['https://wynagrodzenia.pl/kalkulator-wynagrodzen/']
-
     def parse(self, response):
+        """Overrides the scrapy.Spider parsing
+
+        Parameters
+        ----------
+        response : scrapy.http.Response
+            Response to parse
+
+        Returns
+        -------
+        scrapy.FormRequest
+            form request, filled from response and post_data
+        """
         with open('form.html', 'wb') as file:
             file.write(response.body)
         # the form has a hidden field with a token, so we're actually submitting the form
@@ -53,6 +93,14 @@ class EarningsSpider(scrapy.Spider):
                                                 callback=self.parse_results)
 
     def parse_results(self, response):
+        """Callback for the form response
+
+        Parameters
+        ----------
+        response : scrapy.http.Response
+            Response to parse
+
+        """
         with open('result.html', 'wb') as file:
             file.write(response.body)
         salary_div = response.css('div.count-salary')
@@ -66,6 +114,22 @@ class EarningsSpider(scrapy.Spider):
 
 
 def clean_money_string(earnings):
+    """Clean the earnings string
+
+    Change comma to dot(will convert to float), leave only numbers and dot finally leave only the part before the
+    dot(if there is one)
+
+    Parameters
+    ----------
+    earnings : str
+        The string representation of earnings to clean
+
+    Returns
+    -------
+    str
+        cleaned earnings string
+
+    """
     # if there's a comma, change it to a dot
     earnings = earnings.replace(',', '.')
     # remove all characters except numbers and dots
@@ -78,11 +142,32 @@ def clean_money_string(earnings):
 
 
 class EarningsCalculator:
+    """
+    A class for converting a list of earnings into salary, using EarningsSpider as crawlers.
+
+    Attributes
+    ----------
+    earnings_list : list of str
+        a list of earnings to convert
+
+    Methods
+    -------
+    add_earnings(earnings)
+        Cleans earnings and adds to earnings_list
+    get_salary()
+        Converts the earnings_list to salary, returns an iterable
+    """
 
     def __init__(self):
         self.earnings_list = list()
 
     def add_earnings(self, earnings):
+        """Cleans earnings and adds to earnings_list
+        Parameters
+        ----------
+        earnings : str or int or float
+            earnings to add to the list
+        """
         earnings = clean_money_string(earnings)
         self.earnings_list.append(earnings)
 
@@ -91,6 +176,17 @@ class EarningsCalculator:
     # [[2000, 1500],
     # [3000, 2500]]
     def get_salary(self):
+        """Converts the earnings_list to salary, returns an iterable
+        Runs a spider for each earning in the list, returns results an iterable
+        Will wait up to 10 seconds for each spider.
+
+        Returns
+        -------
+        iterable
+            Each result will be returned using yield.
+            A single result is of format [earnings : str, salary : str]
+
+        """
         earnings_count = len(self.earnings_list)
         assert earnings_count > 0, 'no earnings to convert'
         # queue for receiving data from spiders
@@ -116,6 +212,13 @@ class EarningsCalculator:
 
 
 def display_graph(results):
+    """Displays a bar graph of EarningsCalculator results
+
+    Parameters
+    ----------
+    results : list of list of str
+        a list of [earnings, salary] to plot
+    """
     height = list()
     y_pos = list()
     for result in results:
@@ -130,6 +233,9 @@ def display_graph(results):
     plt.title('Zarobki brutto do netto')
     plt.xlabel('Brutto')
     plt.ylabel('Netto')
+
+    plt.xticks(y_pos, rotation=45)
+    plt.subplots_adjust(bottom=0.15, top=0.95)
     plt.show()
 
 
