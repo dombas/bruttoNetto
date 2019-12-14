@@ -29,21 +29,19 @@ class EarningsCalculatorTestCase(unittest.TestCase):
     def testEarningsCalculator(self):
         test_data = {
             '4000': '2907.96',
-            '2239': '1666.14',
             '50000': '32637.25',
-            '9999,99': '7140.38',
             '9999.99': '7140.38',
-            '2239 PLN': '1666,14',
+            '2239 PLN': '1666.14',
             '4000,00 zł': '2907.96',
         }
         earnings_calculator = EarningsCalculator()
         for input_data in test_data:
             earnings_calculator.add_earnings(input_data)
-        for input_output_tuple in earnings_calculator.get_salary():
+        for result_tuple in earnings_calculator.get_salary():
             with self.subTest():
-                input_value = input_output_tuple[0]
+                input_value = result_tuple[2]
                 expected_value = test_data[input_value]
-                returned_value = input_output_tuple[1]
+                returned_value = result_tuple[1]
                 self.assertEqual(returned_value, expected_value)
 
 

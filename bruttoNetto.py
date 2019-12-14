@@ -17,6 +17,7 @@ class EarningsSpider(scrapy.Spider):
         earnings to input into the calculator
     queue : Queue
         results will be put into this queue
+    user_input :
 
     Methods
     -------
@@ -30,17 +31,18 @@ class EarningsSpider(scrapy.Spider):
     name = 'wynagrodzenia.pl'
     start_urls = ['https://wynagrodzenia.pl/kalkulator-wynagrodzen/']
 
-    def __init__(self, earnings, queue, name=None, **kwargs):
+    def __init__(self, input_tuple, queue, name=None, **kwargs):
         """
         Parameters
         ----------
-        earnings : str or int or float
-            earnings to input into the calculator
+        input_tuple : (str, str or int or float)
+            original user input and cleaned earnings to input into the calculator
         queue : Queue
             results will be put into this queue
         """
         super().__init__(name, **kwargs)
-        self.earnings = str(earnings)
+        self.user_input = str(input_tuple[0])
+        self.earnings = str(input_tuple[1])
         self.queue = queue
         self.post_data = {
             'sedlak_calculator[earnings]': self.earnings,
@@ -110,7 +112,7 @@ class EarningsSpider(scrapy.Spider):
         # extract only digits from salary and cut off the cents
         salary = clean_money_string(salary)
         # send the results through a queue
-        self.queue.put([self.earnings, salary])
+        self.queue.put((self.earnings, salary, self.user_input))
 
 
 def clean_money_string(earnings):
@@ -154,7 +156,7 @@ class EarningsCalculator:
     """
 
     def __init__(self):
-        self.earnings_list = list()
+        self.inputs_list = list()
 
     def add_earnings(self, earnings):
         """Cleans earnings and adds to earnings_list
@@ -163,8 +165,8 @@ class EarningsCalculator:
         earnings : str or int or float
             earnings to add to the list
         """
-        earnings = clean_money_string(earnings)
-        self.earnings_list.append(earnings)
+        cleaned_earnings = clean_money_string(earnings)
+        self.inputs_list.append((earnings, cleaned_earnings))
 
     # iterable
     # results are a list like this:
@@ -182,7 +184,7 @@ class EarningsCalculator:
             A single result is of format [earnings : str, salary : str]
 
         """
-        earnings_count = len(self.earnings_list)
+        earnings_count = len(self.inputs_list)
         assert earnings_count > 0, 'no earnings to convert'
         # queue for receiving data from spiders
         queue = Queue(maxsize=earnings_count)
@@ -192,8 +194,8 @@ class EarningsCalculator:
             'LOG_FILE': 'scrapy.log'
         })
         # add a spider for each earning to convert
-        for earning_to_convert in self.earnings_list:
-            process.crawl(EarningsSpider, earnings=earning_to_convert, queue=queue)
+        for input_tuple in self.inputs_list:
+            process.crawl(EarningsSpider, input_tuple=input_tuple, queue=queue)
         process.start()
 
         # wait for results from spiders
@@ -219,7 +221,7 @@ def display_graph(results):
     y_pos = list()
     for result in results:
         # if the result did not timeout (it will be a string otherwise)
-        if isinstance(result, list):
+        if isinstance(result, (tuple, list)):
             brutto = float(result[1])
             netto = float(result[0])
             height.append(brutto)
