@@ -11,16 +11,16 @@ class FunctionsTestCase(unittest.TestCase):
         # (input, expected output)
         test_data = [
             ('4000', '4000'),
-            ('2555,44', '2555'),
-            ('455.111', '455'),
-            ('1900.', '1900'),
+            ('2555,44', '2555.44'),
+            ('455.111', '455.111'),
+            ('1900.', '1900.'),
             ('5555 PLN', '5555'),
-            ('2433,22zł', '2433'),
+            ('2433,22zł', '2433.22'),
         ]
         for tpl in test_data:
-            with self.subTest():
-                input_value = tpl[0]
-                expected_value = tpl[1]
+            input_value = tpl[0]
+            expected_value = tpl[1]
+            with self.subTest(input=input_value):
                 returned_value = clean_money_string(input_value)
                 self.assertEqual(returned_value, expected_value)
 
@@ -28,9 +28,13 @@ class FunctionsTestCase(unittest.TestCase):
 class EarningsCalculatorTestCase(unittest.TestCase):
     def testEarningsCalculator(self):
         test_data = {
-            '4000': '2907',
-            '2239': '1666',
-            '50000': '32637',
+            '4000': '2907.96',
+            '2239': '1666.14',
+            '50000': '32637.25',
+            '9999,99': '7140.38',
+            '9999.99': '7140.38',
+            '2239 PLN': '1666,14',
+            '4000,00 zł': '2907.96',
         }
         earnings_calculator = EarningsCalculator()
         for input_data in test_data:

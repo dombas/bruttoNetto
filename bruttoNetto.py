@@ -116,8 +116,7 @@ class EarningsSpider(scrapy.Spider):
 def clean_money_string(earnings):
     """Clean the earnings string
 
-    Change comma to dot(will convert to float), leave only numbers and dot finally leave only the part before the
-    dot(if there is one)
+    Change comma to dot(will convert to float), leave only numbers and dot
 
     Parameters
     ----------
@@ -134,10 +133,6 @@ def clean_money_string(earnings):
     earnings = earnings.replace(',', '.')
     # remove all characters except numbers and dots
     earnings = ''.join(list(filter(lambda x: str.isdigit(x) or '.' == x, earnings)))
-    # if there are cents, remove them
-    dot_index = earnings.find('.')
-    if dot_index != -1:
-        earnings = earnings[:dot_index]
     return earnings
 
 
@@ -272,4 +267,3 @@ def main():
 if __name__ == '__main__':
     main()
 
-# TODO don't cut off cents on input and output, maybe only for graph
