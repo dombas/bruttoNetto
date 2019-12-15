@@ -44,6 +44,7 @@ class EarningsSpider(scrapy.Spider):
         self.user_input = str(input_tuple[0])
         self.earnings = str(input_tuple[1])
         self.queue = queue
+        # form data that will be later sent
         self.post_data = {
             'sedlak_calculator[earnings]': self.earnings,
             'sedlak_calculator[selfEmployer]': '1',
@@ -109,7 +110,7 @@ class EarningsSpider(scrapy.Spider):
         spans_in_salary_div = salary_div.css('span::text')
         # get first span, it contains the text we're interested in
         salary = spans_in_salary_div.get()
-        # extract only digits from salary and cut off the cents
+        # extract only digits from salary
         salary = clean_money_string(salary)
         # send the results through a queue
         self.queue.put((self.earnings, salary, self.user_input))
@@ -170,8 +171,10 @@ class EarningsCalculator:
 
     # iterable
     # results are a list like this:
-    # [[2000, 1500],
-    # [3000, 2500]]
+    # [(cleaned input, calculated, original input),...]
+    # example:
+    # [(2000, 1500, '2000'),
+    # (3000, 2500, '3000 zł')]
     def get_salary(self):
         """Converts the earnings_list to salary, returns an iterable
         Runs a spider for each earning in the list, returns results an iterable

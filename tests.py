@@ -1,7 +1,4 @@
 import unittest
-from queue import Queue
-
-from scrapy.crawler import CrawlerProcess
 
 from bruttoNetto import clean_money_string, EarningsCalculator
 
