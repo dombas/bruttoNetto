@@ -22,10 +22,10 @@ class EarningsSpider(scrapy.Spider):
     Methods
     -------
     parse(response)
-        Writes the html response to form.html file, returns a scrapy.FormRequest and sets self.parse_results as callback
+        Returns a scrapy.FormRequest and sets self.parse_results as callback
 
-    parse_results(response) Writes the html response to result.html file, extracts the calculated salary from html,
-        cleans it and puts a [earnings, salary] into the queue.
+    parse_results(response)
+        Extracts the calculated salary from html, cleans it and puts a [earnings, salary] into the queue.
     """
 
     name = 'wynagrodzenia.pl'
@@ -86,8 +86,6 @@ class EarningsSpider(scrapy.Spider):
         scrapy.FormRequest
             form request, filled from response and post_data
         """
-        with open('form.html', 'wb') as file:
-            file.write(response.body)
         # the form has a hidden field with a token, so we're actually submitting the form
         # (instead of simply using requests and a POST request)
         return scrapy.FormRequest.from_response(response,
@@ -104,8 +102,6 @@ class EarningsSpider(scrapy.Spider):
             Response to parse
 
         """
-        with open('result.html', 'wb') as file:
-            file.write(response.body)
         salary_div = response.css('div.count-salary')
         spans_in_salary_div = salary_div.css('span::text')
         # get first span, it contains the text we're interested in
